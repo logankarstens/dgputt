@@ -1,21 +1,14 @@
 import { Pressable, Text, View, StyleSheet } from "react-native";
-import { title, button } from "../styles/styles";
 import { useNavigation } from "expo-router";
+import { RootStackParamList } from "./models/RootStackParamList";
 import * as SecureStore from 'expo-secure-store';
-
-async function setValue(key: string, value: string) {
-  await SecureStore.setItemAsync(key, value);
-}
-
-async function getValue(key: string) {
-  return await SecureStore.getItemAsync(key);
-}
+import { title, button } from "../styles/styles";
 
 export default function Index() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<RootStackParamList>();
   const buttonStyle = button();
   async function test() {
-    console.log(await getValue("test") || "NO VALUE");
+    console.log(SecureStore.getItem("gameHistory") ?? "NO VALUE");
   }
   
   function play() {

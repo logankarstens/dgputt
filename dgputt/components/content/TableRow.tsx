@@ -1,49 +1,65 @@
-import { useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable } from "react-native";
+import GameContext from "@/app/context/gameContext";
 import Checkbox from "../UI/checkbox";
-//import styles from "../../styles/styles";
+import { rowData } from "@/app/models/rowData"
+import config from "@/gameconfig.json";
 
-const bonusScores = [
-  [2, 2, 5],
-  [2, 3, 10],
-  [3, 4, 15],
-  [5, 6, 20],
-  [8, 10, 25]
-];
-
-export default function TableRow(props: { rowNum: number, onScoreChange: Function }) {
+export default function TableRow(props: { rowIndex: number }) {
+  const ctx = useContext(GameContext);
   const [makeCount, setMakeCount] = useState(0);
-  const [bonuses, setBonuses] = useState([false, false, false])
+  const [bonuses, setBonuses] = useState([false, false, false]);
 
   const rowScore = useMemo(() => {
-    let result: number = 0;
-    if (props.rowNum == 4)
-      result += (makeCount*2);
-    else
-      result += makeCount;
+    let total: number = props.rowIndex == (config.numRows - 1) ? (makeCount * 2) : makeCount;
     
     bonuses.forEach((bonus, index) => {
-      if (bonus) result += bonusScores[props.rowNum][index];
+      if (bonus) total += config.bonusScores[props.rowIndex][index];
     });
-    props.onScoreChange(result);
-    return result;
+    
+    return total;
   }, [makeCount, bonuses]);
 
   function subtractMakeCount() {
-    setMakeCount(prevCount => Math.max(prevCount - 1, 0));
+    setMakeCount((prevCount: number) => {
+      let newCount =  Math.max(prevCount - 1, 0);
+      propagateChanges({ makeCount: newCount, bonuses });
+      return newCount;
+    });    
   }
 
   function addMakeCount() {
-    setMakeCount(prevCount => Math.min(prevCount + 1, 5));
+    setMakeCount((prevCount: number) => {
+      let newCount = Math.min(prevCount + 1, 10);
+      propagateChanges({ makeCount: newCount, bonuses });
+      return newCount;
+    });
+    
   }
 
   function toggleBonus(bonusIndex: number) {
-    setBonuses(oldBonuses => {
+    setBonuses((oldBonuses: Array<boolean>) => {
       let newBonuses = oldBonuses.slice();
-      newBonuses[bonusIndex] = !newBonuses[bonusIndex]
+      newBonuses[bonusIndex] = !newBonuses[bonusIndex];
+      propagateChanges({ makeCount, bonuses: newBonuses });
       return newBonuses;
     });
   }
+
+  function propagateChanges(rowData: rowData) {
+    ctx.updateGame(props.rowIndex, rowData);
+  }
+
+  useEffect(() => {
+    const rowData = ctx.gameData[ctx.roundIndex][props.rowIndex]
+    if (rowData != null) {
+      setMakeCount(rowData.makeCount);
+      setBonuses(rowData.bonuses.slice());
+    } else {
+      setMakeCount(0);
+      setBonuses([false, false, false]);
+    }
+  }, [ctx.gameData[ctx.roundIndex]]);
 
   return (
     <View style={{display: "flex", flexDirection: "row", backgroundColor: "#ddd", height: 70, borderBottomColor: "black", borderBottomWidth: 2}}>
@@ -55,7 +71,7 @@ export default function TableRow(props: { rowNum: number, onScoreChange: Functio
         </Pressable>
         <View>
           <View>
-          <Text>{(props.rowNum+2)*5}'</Text>
+          <Text>{(props.rowIndex+2)*5}'</Text>
           </View>
           <View style={{width: 50, display: "flex", alignItems: "center", justifyContent: "center"}}>
             <Text style={{fontSize: 24, marginTop: 4}}>{makeCount}</Text>
@@ -68,18 +84,18 @@ export default function TableRow(props: { rowNum: number, onScoreChange: Functio
         </Pressable>
         <View style={{paddingHorizontal: 15, width: 125}}>
           <View style={{height: "50%", display: "flex", flexDirection: "row", gap: 5, alignItems: "center", justifyContent: "space-between"}}>
-            <Text>First in +{bonusScores[props.rowNum][0]}</Text>
+            <Text>First in +{config.bonusScores[props.rowIndex][0]}</Text>
             <Checkbox size={15} onCheck={() => toggleBonus(0)}></Checkbox>
           </View>
           <View style={{height: "50%", display: "flex", flexDirection: "row", gap: 5, alignItems: "center", justifyContent: "space-between"}}>
-            <Text>Last in +{bonusScores[props.rowNum][1]}</Text>
+            <Text>Last in +{config.bonusScores[props.rowIndex][1]}</Text>
             <Checkbox size={15} onCheck={() => toggleBonus(1)}></Checkbox>
           </View>   
         </View>
         <View style={{paddingHorizontal: 15, display: "flex", flexShrink: 1, justifyContent: "center", gap: 5}}>
             <Text>All made</Text>
             <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-            <Text>+{bonusScores[props.rowNum][2]}</Text>
+            <Text>+{config.bonusScores[props.rowIndex][2]}</Text>
             <Checkbox size={15} onCheck={() => toggleBonus(2)}></Checkbox>
             </View>
             
