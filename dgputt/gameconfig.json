@@ -1,6 +1,7 @@
 {
     "numRounds": 2,
     "numRows": 5,
+    "numPutts": 10,
     "bonusScores": [
         [2, 2, 5],
         [2, 3, 10],

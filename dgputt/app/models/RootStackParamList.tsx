@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from "react-native-screens/lib/typescript/n
 type Routes = {
   index: undefined;
   play: undefined;
+  scores: undefined;
 };
 
 export type RootStackParamList = NativeStackNavigationProp<Routes>

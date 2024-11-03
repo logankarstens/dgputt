@@ -38,7 +38,6 @@ export function Play() {
   const ctx = useContext(GameContext);
   const navigation = useNavigation<RootStackParamList>();
 
-
   useEffect(() => {
     navigation.setOptions({
       title: `Round ${(ctx.roundIndex+1).toString()}/2`,
@@ -60,7 +59,7 @@ export function Play() {
   
   const calculateRoundScore = (roundIndex: number) => {
     let roundTotal: number = 0;
-    ctx.gameData[ctx.roundIndex].forEach((row, rowIndex) => {
+    ctx.gameData[roundIndex].forEach((row, rowIndex) => {
       if (row == null) return;
       roundTotal += rowIndex == (config.numRows-1) ? (row.makeCount*2) : row.makeCount;
 
@@ -107,7 +106,7 @@ export function Play() {
           <View style={{marginLeft: "auto"}}>
             <View style={{display: "flex", flexDirection: "row", gap: 10}}>
               <Text style={{marginLeft: "auto", marginTop: 5}}>Score</Text>
-              <View style={{backgroundColor: "red", width: 64, height: 70, display: "flex", alignItems: "center", justifyContent: "center"}}>
+              <View style={{backgroundColor: "red", width: 64, height: 70, display: "flex", alignItems: "center", justifyContent: "center", borderBottomColor: "black", borderBottomWidth: 2}}>
                 <Text style={{fontSize: 24}}>{roundScore.toString()}</Text>
               </View>
             </View>
